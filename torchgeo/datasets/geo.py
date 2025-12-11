@@ -683,19 +683,18 @@ class XarrayDataset(GeoDataset):
 
         TIME_CANDIDATES = ["time", "valid_time", "times", "t", "date"]
         time_coord = None
-        for cand in TIME_CANDIDATES:
-            if cand in src.coords:
-                time_coord = cand
-                break
-            
-        if time_coord is None:
-            raise ValueError(f"No valid time coordinate found in {filepath}. "
-                             f"Tried: {TIME_CANDIDATES}")
-
 
         for filepath in self.files:
             try:
                 with xr.open_dataset(filepath, decode_coords='all') as src:
+                    for cand in TIME_CANDIDATES:
+                        if cand in src.coords:
+                            time_coord = cand
+                            break
+                    if time_coord is None:
+                        raise ValueError(f"No valid time coordinate found in {filepath}. "
+                                         f"Tried: {TIME_CANDIDATES}")
+                    
                     crs = crs or src.rio.crs or CRS.from_epsg(4326)
                     res = res or src.rio.resolution()
                     data_vars = data_vars or list(src.data_vars.keys())
